@@ -5,6 +5,7 @@
 import numbers
 import numpy as np
 import pandas as pd
+import matplotlib
 import matplotlib.pyplot as plt
 import plotly.express as px
 import plotly.graph_objects as go
@@ -15,6 +16,7 @@ except:
     from .progress_io import ProgressIO
 
 
+matplotlib.use("agg")
 pd.options.mode.chained_assignment = "raise"
 
 
@@ -28,7 +30,8 @@ class StreamlitBackend:
 
         self._io_ = ProgressIO()
 
-        for progress_id in progress_ids:
+    def get_progress_data(self, progress_id):
+        for progress_id in self.progress_ids:
             self.progress_id_dict[progress_id] = {}
 
             self.progress_id_dict[progress_id]["prog_d"] = self._io_.load_progress(
@@ -38,7 +41,6 @@ class StreamlitBackend:
                 progress_id
             )
 
-    def get_progress_data(self, progress_id):
         progress_data = self.progress_id_dict[progress_id]["prog_d"]
 
         if progress_data is None:
