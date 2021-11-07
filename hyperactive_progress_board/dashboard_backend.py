@@ -24,7 +24,7 @@ pd.options.mode.chained_assignment = "raise"
 color_scale = px.colors.sequential.Jet
 
 
-class StreamlitBackend:
+class DashboardBackend:
     def __init__(self, progress_ids):
         self.progress_ids = progress_ids
         self.progress_id_dict = {}

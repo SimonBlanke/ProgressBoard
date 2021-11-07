@@ -8,11 +8,11 @@ import panel as pn
 pn.extension(sizing_mode="stretch_width")
 pn.extension("plotly")
 
-from streamlit_backend import StreamlitBackend
+from dashboard_backend import DashboardBackend
 
 
 progress_ids = sys.argv[1:]
-backend = StreamlitBackend(progress_ids)
+backend = DashboardBackend(progress_ids)
 
 
 plot_dict = {}
@@ -35,11 +35,12 @@ for progress_id in progress_ids:
     mpl_pane = pn.pane.Plotly(pyplot_fig)
     parallel_coord_pane = pn.pane.Plotly(parallel_coord_plot)
     parallel_categ_pane = pn.pane.Plotly(parallel_categ_plot)
+    tabulator = pn.widgets.Tabulator(last_best, height=500)
 
     plot_dict[progress_id]["line_plot"] = mpl_pane
-
     plot_dict[progress_id]["parallel_coord_plot"] = parallel_coord_pane
     plot_dict[progress_id]["parallel_categ_plot"] = parallel_categ_pane
+    plot_dict[progress_id]["table"] = tabulator
 
     # data_dict[progress_id]["parallel_coord_data"] = # pre filter incompatible paras
     # data_dict[progress_id]["parallel_categ_data"] = # pre filter incompatible paras
@@ -66,10 +67,11 @@ for progress_id in progress_ids:
         ("Parallel Coordinates", parallel_coord_pane),
         ("Parallel Categories", parallel_categ_pane),
     )
-    plot_row = pn.Row(mpl_pane, tabs)
-    table_row = pn.Row()
 
-    model_row = pn.Row(pn.Column(title_row, plot_row, background="white"))
+    plot_row = pn.Row(mpl_pane, tabs)
+    table_row = pn.Row(tabulator)
+
+    model_row = pn.Row(pn.Column(title_row, plot_row, table_row, background="white"))
     model_row_list.append(model_row)
     model_row_list.append(pn.Row(pn.Spacer(height=100), background="WhiteSmoke"))
 
@@ -96,9 +98,16 @@ def patch_parall_categ():
         plot_dict[progress_id]["parallel_categ_plot"].object = plotly_fig
 
 
+def stream_table():
+    progress_data = backend.create_info(progress_id)
+    print("\n progress_data \n", progress_data, "\n")
+    plot_dict[progress_id]["table"].patch(progress_data)
+
+
 pn.state.add_periodic_callback(patch_line_plot, 1000)
 pn.state.add_periodic_callback(patch_parall_coord, 1000)
 pn.state.add_periodic_callback(patch_parall_categ, 1000)
+pn.state.add_periodic_callback(stream_table, 1000)
 
 
 main_col = pn.Column(*model_row_list)
