@@ -7,6 +7,7 @@ import numpy as np
 import pandas as pd
 import matplotlib
 import matplotlib.pyplot as plt
+from matplotlib.figure import Figure
 import plotly.express as px
 import plotly.graph_objects as go
 
@@ -50,14 +51,38 @@ class StreamlitBackend:
 
     def pyplot(self, progress_data):
         if progress_data is None or len(progress_data) <= 1:
-            return None
+            fig = px.line(pd.DataFrame([]))
+            fig = go.Figure()
+        else:
+            """
+            fig = px.line(
+                progress_data, x="nth_iter", y="score_best", color="nth_process"
+            )
+            """
+            fig = go.Figure()
 
+            nth_iter = progress_data["nth_iter"]
+            score_best = progress_data["score_best"]
+            nth_process = list(progress_data["nth_process"])
+            for i in np.unique(nth_process):
+                nth_iter_p = nth_iter[nth_process == i]
+                score_best_p = score_best[nth_process == i]
+
+                fig.add_trace(
+                    go.Scatter(
+                        x=nth_iter_p,
+                        y=score_best_p,
+                        # mode="lines+markers",
+                        # name="lines+markers",
+                    )
+                )
+        """
         nth_iter = progress_data["nth_iter"]
         score_best = progress_data["score_best"]
         nth_process = list(progress_data["nth_process"])
 
         if np.all(nth_process == nth_process[0]):
-            fig, ax = plt.subplots()
+
             plt.plot(nth_iter, score_best)
         else:
             fig, ax = plt.subplots()
@@ -69,62 +94,120 @@ class StreamlitBackend:
                 score_best_p = score_best[nth_process == i]
                 plt.plot(nth_iter_p, score_best_p, label=str(i) + ". process")
             plt.legend()
+        """
+        return fig
+
+    def get_cat_cols(self, progress_data, score=True):
+        numerics = ["object", "bool", "category"]
+        cat_cols = list(progress_data.select_dtypes(include=numerics).columns)
+        print("\n cat_cols \n", cat_cols, "\n")
+
+        cat_score_cols = cat_cols + ["score"]
+        print("\n cat_score_cols \n", cat_score_cols, "\n")
+
+        return progress_data[cat_score_cols]
+
+    def get_num_cols(self, progress_data):
+        numerics = ["int16", "int32", "int64", "float16", "float32", "float64"]
+        return progress_data.select_dtypes(include=numerics)
+
+    def parallel_categ(self, progress_data):
+        if progress_data is None or len(progress_data) <= 1:
+            fig = go.Figure()
+        else:
+            progress_data = self.get_cat_cols(progress_data)
+
+            progress_data = progress_data.drop(
+                ["nth_iter", "score_best", "nth_process", "best"],
+                axis=1,
+                errors="ignore",
+            )
+
+            # remove score
+            prog_data_columns = list(progress_data.columns)
+            prog_data_columns.remove("score")
+
+            data_dict_list = []
+            for col in prog_data_columns:
+                data_dict = {}
+                data_dict["label"] = col
+                data_dict["values"] = progress_data[col]
+
+                data_dict_list.append(data_dict)
+
+            fig = go.Figure(
+                data=go.Parcoords(
+                    line=dict(
+                        color=progress_data["score"],
+                        colorscale=color_scale,
+                    ),
+                    dimensions=data_dict_list,
+                )
+            )
+
+            fig = px.parallel_categories(
+                progress_data,
+                color_continuous_scale=color_scale,
+                color="score",
+                dimensions=prog_data_columns,
+            )
 
         return fig
 
-    def filter_data(self, df, filter_df):
-        prog_data_columns = list(df.columns)
-
-        if len(df) > 1:
-            for column in prog_data_columns:
-                if column not in list(filter_df["parameter"]):
-                    continue
-
-                filter_ = filter_df[filter_df["parameter"] == column]
-                lower, upper = (
-                    filter_["lower bound"].values[0],
-                    filter_["upper bound"].values[0],
-                )
-
-                col_data = df[column]
-
-                try:
-                    lower = float(lower)
-                except:
-                    lower = np.min(col_data)
-
-                try:
-                    upper = float(upper)
-                except:
-                    upper = np.max(col_data)
-
-                df = df[(df[column] >= lower) & (df[column] <= upper)]
-
-        return df
-
-    def plotly(self, progress_data, progress_id):
+    def parallel_coord_(self, progress_data):
         if progress_data is None or len(progress_data) <= 1:
-            return None
+            fig = go.Figure()
+        else:
+            progress_data = self.get_num_cols(progress_data)
 
-        filter_df = self.progress_id_dict[progress_id]["filt_f"]
+            progress_data = progress_data.drop(
+                ["nth_iter", "score_best", "nth_process", "best"],
+                axis=1,
+                errors="ignore",
+            )
 
-        progress_data = progress_data.drop(
-            ["nth_iter", "score_best", "nth_process", "best"], axis=1
-        )
+            # remove score
+            prog_data_columns = list(progress_data.columns)
+            prog_data_columns.remove("score")
 
-        if filter_df is not None:
-            progress_data = self.filter_data(progress_data, filter_df)
+            data_dict_list = []
+            for col in prog_data_columns:
+                data_dict = {}
+                data_dict["label"] = col
+                data_dict["values"] = progress_data[col]
 
-        # remove score
-        prog_data_columns = list(progress_data.columns)
-        prog_data_columns.remove("score")
+                data_dict_list.append(data_dict)
 
-        fig = px.parallel_coordinates(
-            progress_data,
-            dimensions=prog_data_columns,
-            color="score",
-            color_continuous_scale=color_scale,
-        )
+            fig = go.Figure(
+                data=go.Parcoords(
+                    line=dict(
+                        color=progress_data["score"],
+                        colorscale=color_scale,
+                    ),
+                    dimensions=data_dict_list,
+                )
+            )
+
+        return fig
+
+    def parallel_coord(self, progress_data):
+        if progress_data is None or len(progress_data) <= 1:
+            fig = px.parallel_coordinates(pd.DataFrame([]))
+        else:
+            progress_data = progress_data.drop(
+                ["nth_iter", "score_best", "nth_process", "best"], axis=1
+            )
+
+            # remove score
+            prog_data_columns = list(progress_data.columns)
+            prog_data_columns.remove("score")
+
+            fig = px.parallel_coordinates(
+                progress_data,
+                dimensions=prog_data_columns,
+                color="score",
+                color_continuous_scale=color_scale,
+            )
 
         return fig
 
@@ -169,7 +252,7 @@ class StreamlitBackend:
         progress_data = self.get_progress_data(progress_id)
 
         pyplot_fig = self.pyplot(progress_data)
-        plotly_fig = self.plotly(progress_data, progress_id)
+        plotly_fig = self.plotly(progress_data)
 
         return pyplot_fig, plotly_fig
 

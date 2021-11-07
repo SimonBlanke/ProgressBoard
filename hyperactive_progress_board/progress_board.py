@@ -8,7 +8,7 @@ import uuid
 
 import numpy as np
 
-from hyperactive_data_storage import DataCollector
+from hyperactive_data_storage import DataSaver
 from .progress_io import ProgressIO
 
 
@@ -93,15 +93,15 @@ class ProgressBoard:
 
         self._io_.remove_progress(progress_id)
         self.create_lock(progress_id)
-        data_c = DataCollector(self._io_.get_progress_data_path(progress_id))
+        data_c = DataSaver(self._io_.get_progress_data_path(progress_id))
         self.progress_collectors[progress_id] = data_c
 
     def open(self):
         abspath = os.path.abspath(__file__)
-        dir_ = os.path.dirname(abspath)
 
         paths = " ".join(self.progress_ids)
-        open_streamlit = "streamlit run " + dir_ + "/run_streamlit.py " + paths
+        dashboard_path = os.path.join(os.path.dirname(abspath), "run_panel.py")
+        open_streamlit = "panel serve --show " + dashboard_path + " --args " + paths
 
         # from: https://stackoverflow.com/questions/7574841/open-a-terminal-from-python
         os.system('gnome-terminal -x bash -c " ' + open_streamlit + ' " ')
