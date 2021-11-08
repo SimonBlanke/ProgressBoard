@@ -11,9 +11,13 @@ pn.extension("plotly")
 from dashboard_backend import DashboardBackend
 
 
+update_sec = 1
+
+
 progress_ids = sys.argv[1:]
 backend = DashboardBackend(progress_ids)
 
+print("\n -----------> progress_ids \n", progress_ids, "\n")
 
 plot_dict = {}
 data_dict = {}
@@ -44,12 +48,6 @@ for progress_id in progress_ids:
 
     # data_dict[progress_id]["parallel_coord_data"] = # pre filter incompatible paras
     # data_dict[progress_id]["parallel_categ_data"] = # pre filter incompatible paras
-
-    """
-    if last_best is not None:
-        plotly_table = backend.table_plotly(last_best)
-        placeholder3.plotly_chart(plotly_table, use_container_width=True)
-    """
 
     title_str = """ # Objective Function: {0} """
     title_str = title_str.format(search_id)
@@ -85,7 +83,10 @@ def patch_line_plot():
 
 def patch_parall_coord():
     for progress_id in progress_ids:
+
         progress_data = backend.get_progress_data(progress_id)
+        print("\n progress_data \n", progress_data, "\n")
+
         plotly_fig = backend.parallel_coord(progress_data)
         plot_dict[progress_id]["parallel_coord_plot"].object = plotly_fig
 
@@ -93,21 +94,25 @@ def patch_parall_coord():
 def patch_parall_categ():
     for progress_id in progress_ids:
         progress_data = backend.get_progress_data(progress_id)
-        print("\n progress_data \n ", progress_data.dtypes, "\n")
         plotly_fig = backend.parallel_categ(progress_data)
         plot_dict[progress_id]["parallel_categ_plot"].object = plotly_fig
 
 
 def stream_table():
-    progress_data = backend.create_info(progress_id)
-    print("\n progress_data \n", progress_data, "\n")
-    plot_dict[progress_id]["table"].patch(progress_data)
+    progress_data_new = backend.diff_progress_data
+    # print("\n progress_data_new \n", progress_data_new, "\n")
+    if len(progress_data_new) > 0:
+        plot_dict[progress_id]["table"].stream(progress_data_new, rollover=10)
+    else:
+        print("\n ---> No new progress data for table stream")
 
 
-pn.state.add_periodic_callback(patch_line_plot, 1000)
-pn.state.add_periodic_callback(patch_parall_coord, 1000)
-pn.state.add_periodic_callback(patch_parall_categ, 1000)
-pn.state.add_periodic_callback(stream_table, 1000)
+update_msec = 1000 * update_sec
+
+pn.state.add_periodic_callback(patch_line_plot, update_msec)
+pn.state.add_periodic_callback(patch_parall_coord, update_msec)
+pn.state.add_periodic_callback(patch_parall_categ, update_msec)
+# pn.state.add_periodic_callback(stream_table, update_msec)
 
 
 main_col = pn.Column(*model_row_list)
@@ -119,4 +124,5 @@ pn.template.FastListTemplate(
     main=[
         layout,
     ],
+    header_background="#544763",
 ).servable()
