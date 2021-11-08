@@ -45,6 +45,7 @@ class ProgressBoard:
         self.init_paths(objective_function.__name__)
 
         def wrapper(para):
+
             results = objective_function(para)
             progress_id = objective_function.__name__ + ":" + self.uuid
 
@@ -71,6 +72,8 @@ class ProgressBoard:
             self.progress_collectors[progress_id].append(progress_dict)
 
             return results
+
+        wrapper.__name__ = objective_function.__name__
 
         return wrapper
 
