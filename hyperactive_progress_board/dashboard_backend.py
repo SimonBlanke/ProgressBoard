@@ -25,41 +25,16 @@ color_scale = px.colors.sequential.Jet
 
 
 class DashboardBackend:
-    def __init__(self, progress_ids):
-        self.progress_ids = progress_ids
-        self.progress_id_dict = {}
-
+    def __init__(self):
         self._io_ = ProgressIO()
 
         self.current_progress_data = None
         self.diff_progress_data = None
 
     def get_progress_data(self, progress_id):
-        for progress_id in self.progress_ids:
-            self.progress_id_dict[progress_id] = {}
-
-            self.progress_id_dict[progress_id]["prog_d"] = self._io_.load_progress(
-                progress_id
-            )
-
-        progress_data = self.progress_id_dict[progress_id]["prog_d"]
-
-        if self.current_progress_data is not None:
-            self.diff_progress_data = pd.concat(
-                [self.current_progress_data, progress_data]
-            ).drop_duplicates(keep=False)
-
-            print(
-                "\n\n\n\n\n self.current_progress_data \n", self.current_progress_data
-            )
-            print("\n progress_data \n", progress_data)
-            print("\n self.diff_progress_data \n", self.diff_progress_data)
-
-        self.current_progress_data = progress_data
-
+        progress_data = self._io_.load_progress(progress_id)
         if progress_data is None:
             return
-
         return progress_data[~progress_data.isin([np.nan, np.inf, -np.inf]).any(1)]
 
     def pyplot(self, progress_data):
@@ -67,11 +42,6 @@ class DashboardBackend:
             fig = px.line(pd.DataFrame([]))
             fig = go.Figure()
         else:
-            """
-            fig = px.line(
-                progress_data, x="nth_iter", y="score_best", color="nth_process"
-            )
-            """
             fig = go.Figure()
 
             nth_iter = progress_data["nth_iter"]
@@ -85,29 +55,8 @@ class DashboardBackend:
                     go.Scatter(
                         x=nth_iter_p,
                         y=score_best_p,
-                        # mode="lines+markers",
-                        # name="lines+markers",
                     )
                 )
-        """
-        nth_iter = progress_data["nth_iter"]
-        score_best = progress_data["score_best"]
-        nth_process = list(progress_data["nth_process"])
-
-        if np.all(nth_process == nth_process[0]):
-
-            plt.plot(nth_iter, score_best)
-        else:
-            fig, ax = plt.subplots()
-            ax.set_xlabel("nth iteration")
-            ax.set_ylabel("best score")
-
-            for i in np.unique(nth_process):
-                nth_iter_p = nth_iter[nth_process == i]
-                score_best_p = score_best[nth_process == i]
-                plt.plot(nth_iter_p, score_best_p, label=str(i) + ". process")
-            plt.legend()
-        """
         return fig
 
     def get_cat_cols(self, progress_data, score=True):
@@ -257,14 +206,6 @@ class DashboardBackend:
         )
         fig.update_layout(height=550)
         return fig
-
-    def create_plots(self, progress_id):
-        progress_data = self.get_progress_data(progress_id)
-
-        pyplot_fig = self.pyplot(progress_data)
-        plotly_fig = self.plotly(progress_data)
-
-        return pyplot_fig, plotly_fig
 
     def create_info(self, progress_id):
         progress_data = self.get_progress_data(progress_id)

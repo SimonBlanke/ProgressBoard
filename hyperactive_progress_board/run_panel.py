@@ -15,7 +15,7 @@ update_sec = 1
 
 
 progress_ids = sys.argv[1:]
-backend = DashboardBackend(progress_ids)
+backend = DashboardBackend()
 
 print("\n -----------> progress_ids \n", progress_ids, "\n")
 
@@ -85,7 +85,8 @@ def patch_parall_coord():
     for progress_id in progress_ids:
 
         progress_data = backend.get_progress_data(progress_id)
-        print("\n progress_data \n", progress_data, "\n")
+        print("\n progress_id \n", progress_id)
+        print(" progress_data \n", progress_data, "\n")
 
         plotly_fig = backend.parallel_coord(progress_data)
         plot_dict[progress_id]["parallel_coord_plot"].object = plotly_fig

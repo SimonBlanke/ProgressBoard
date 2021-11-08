@@ -13,13 +13,9 @@ from .progress_io import ProgressIO
 
 
 class ProgressBoard:
-    def __init__(self, filter_file=None):
+    def __init__(self):
         self.uuid = uuid.uuid4().hex
-
-        self.filter_file = filter_file
-
         self.progress_ids = []
-        self.search_ids = []
 
         self._io_ = ProgressIO(verbosity=False)
         self._io_.create_pd_path()
@@ -84,14 +80,8 @@ class ProgressBoard:
 
     def init_paths(self, search_id):
         progress_id = search_id + ":" + self.uuid
-
-        if progress_id in self.progress_collectors:
-            return self.progress_collectors[progress_id]
-
-        self.search_ids.append(search_id)
         self.progress_ids.append(progress_id)
 
-        self._io_.remove_progress(progress_id)
         self.create_lock(progress_id)
         data_c = DataSaver(self._io_.get_progress_data_path(progress_id))
         self.progress_collectors[progress_id] = data_c
