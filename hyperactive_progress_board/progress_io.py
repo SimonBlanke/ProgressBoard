@@ -3,6 +3,7 @@
 # License: MIT License
 
 import os
+import shutil
 import pandas as pd
 
 
@@ -19,18 +20,6 @@ class Messages:
         if self.warnings:
             print("Warning: Progress data not found in:", path)
 
-    def load_filter_file(self, path):
-        if self.verbosity:
-            print("Load filter file from path:", path)
-
-    def filter_file_not_found(self, path):
-        if self.warnings:
-            print("Warning: Filter file not found in:", path)
-
-    def remove_filter_file(self, path):
-        if self.verbosity:
-            print("Remove filter file from path:", path)
-
     def remove_progress_data(self, path):
         if self.verbosity:
             print("Remove progress data file from path:", path)
@@ -42,26 +31,23 @@ class Messages:
 
 class ProgressIO:
     def __init__(self, verbosity=True, warnings=True):
-        self.path = "./"
+        here = os.path.dirname(os.path.abspath(__file__))
+        self.path = here + "/progress_data/"
+
         self.msg = Messages(verbosity, warnings)
 
-    def get_filter_file_path(self, search_id):
-        return self.path + "/filter_" + search_id + ".csv"
+    def create_pd_path(self):
+        if os.path.exists(self.path):
+
+            shutil.rmtree(self.path)
+
+        os.makedirs(self.path)
 
     def get_progress_data_path(self, search_id):
-        return self.path + "/progress_data_" + search_id + ".csv~"
+        return self.path + "/progress_data_" + search_id + ".csv"
 
     def get_lock_file_path(self, search_id):
-        return self.path + "/progress_data_" + search_id + ".csv~.lock~"
-
-    def load_filter(self, search_id):
-        path = self.get_filter_file_path(search_id)
-        if os.path.isfile(path):
-            self.msg.load_filter_file(path)
-            return pd.read_csv(path)
-        else:
-            self.msg.filter_file_not_found(path)
-            return None
+        return self.path + "/progress_data_" + search_id + ".csv.lock"
 
     def load_progress(self, search_id):
         path = self.get_progress_data_path(search_id)
@@ -71,16 +57,6 @@ class ProgressIO:
         else:
             self.msg.progress_file_not_found(path)
             return None
-
-    def filter_exists(self, search_id):
-        path = self.get_filter_file_path(search_id)
-        return os.path.isfile(path)
-
-    def remove_filter(self, search_id):
-        path = self.get_filter_file_path(search_id)
-        if os.path.isfile(path):
-            os.remove(path)
-            self.msg.remove_filter_file(path)
 
     def remove_progress(self, search_id):
         path = self.get_progress_data_path(search_id)
@@ -93,16 +69,3 @@ class ProgressIO:
         if os.path.isfile(path):
             os.remove(path)
             self.msg.remove_lock_file(path)
-
-    def create_filter(self, search_id, parameter):
-        path = self.get_filter_file_path(search_id)
-        self.remove_filter(search_id)
-
-        filter_dict = {
-            "parameter": parameter,
-            "lower bound": "---",
-            "upper bound": "---",
-        }
-
-        df = pd.DataFrame(filter_dict)
-        df.to_csv(path, index=None)

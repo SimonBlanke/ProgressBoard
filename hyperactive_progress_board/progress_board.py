@@ -22,6 +22,8 @@ class ProgressBoard:
         self.search_ids = []
 
         self._io_ = ProgressIO(verbosity=False)
+        self._io_.create_pd_path()
+
         self.progress_collectors = {}
 
         self.best = 0
@@ -57,11 +59,6 @@ class ProgressBoard:
             self.get_best(score, para)
 
             results_dict["score"] = score
-
-            if self.filter_file and not self._io_.filter_exists(progress_id):
-                parameter = list(para.para_dict.keys()) + list(results_dict.keys())
-                self._io_.create_filter(progress_id, parameter)
-
             progress_dict = para.para_dict
 
             progress_dict.update(results_dict)

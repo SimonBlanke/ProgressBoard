@@ -31,6 +31,9 @@ class DashboardBackend:
 
         self._io_ = ProgressIO()
 
+        self.current_progress_data = None
+        self.diff_progress_data = None
+
     def get_progress_data(self, progress_id):
         for progress_id in self.progress_ids:
             self.progress_id_dict[progress_id] = {}
@@ -38,11 +41,21 @@ class DashboardBackend:
             self.progress_id_dict[progress_id]["prog_d"] = self._io_.load_progress(
                 progress_id
             )
-            self.progress_id_dict[progress_id]["filt_f"] = self._io_.load_filter(
-                progress_id
-            )
 
         progress_data = self.progress_id_dict[progress_id]["prog_d"]
+
+        if self.current_progress_data is not None:
+            self.diff_progress_data = pd.concat(
+                [self.current_progress_data, progress_data]
+            ).drop_duplicates(keep=False)
+
+            print(
+                "\n\n\n\n\n self.current_progress_data \n", self.current_progress_data
+            )
+            print("\n progress_data \n", progress_data)
+            print("\n self.diff_progress_data \n", self.diff_progress_data)
+
+        self.current_progress_data = progress_data
 
         if progress_data is None:
             return
@@ -100,10 +113,7 @@ class DashboardBackend:
     def get_cat_cols(self, progress_data, score=True):
         numerics = ["object", "bool", "category"]
         cat_cols = list(progress_data.select_dtypes(include=numerics).columns)
-        print("\n cat_cols \n", cat_cols, "\n")
-
         cat_score_cols = cat_cols + ["score"]
-        print("\n cat_score_cols \n", cat_score_cols, "\n")
 
         return progress_data[cat_score_cols]
 
