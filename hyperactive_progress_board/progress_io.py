@@ -3,6 +3,7 @@
 # License: MIT License
 
 import os
+import json
 import shutil
 import pandas as pd
 
@@ -48,6 +49,18 @@ class ProgressIO:
 
     def get_lock_file_path(self, search_id):
         return self.path + "/progress_data_" + search_id + ".csv.lock"
+
+    def get_config_path(self):
+        return self.path + "/config.json"
+
+    def read_config(self):
+        with open(self.get_config_path(), "r", encoding="utf-8") as f:
+            config_d = json.load(f)
+        return config_d
+
+    def save_config(self, config_d):
+        with open(self.get_config_path(), "w", encoding="utf-8") as f:
+            json.dump(config_d, f, ensure_ascii=False, indent=4)
 
     def load_progress(self, search_id):
         path = self.get_progress_data_path(search_id)

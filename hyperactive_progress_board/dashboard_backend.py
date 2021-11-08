@@ -2,7 +2,7 @@
 # Email: simon.blanke@yahoo.com
 # License: MIT License
 
-import numbers
+import json
 import numpy as np
 import pandas as pd
 import matplotlib
@@ -27,6 +27,10 @@ color_scale = px.colors.sequential.Jet
 class DashboardBackend:
     def __init__(self):
         self._io_ = ProgressIO()
+        config_d = self._io_.read_config()
+
+        self.width = config_d["width"]
+        self.progress_ids = config_d["progress_ids"]
 
         self.current_progress_data = None
         self.diff_progress_data = None
@@ -57,6 +61,7 @@ class DashboardBackend:
                         y=score_best_p,
                     )
                 )
+
         return fig
 
     def get_cat_cols(self, progress_data, score=True):
@@ -145,6 +150,29 @@ class DashboardBackend:
                     ),
                     dimensions=data_dict_list,
                 )
+            )
+
+        return fig
+
+    def score_hist(self, progress_data):
+        if progress_data is None or len(progress_data) <= 1:
+            # fig = go.Figure()
+            fig = px.histogram(pd.DataFrame([]))
+        else:
+            scores = progress_data["score"]
+            # fig = go.Figure(data=[go.Histogram(x=scores)])
+            fig = px.histogram(progress_data, x="score")
+
+        return fig
+
+    def hist_2d(self, progress_data):
+        if progress_data is None or len(progress_data) <= 1:
+            # fig = go.Figure()
+            fig = px.histogram(pd.DataFrame([]))
+        else:
+            scores = progress_data["score"]
+            fig = px.scatter(
+                progress_data, x="min_samples_split", y="x1", color="score"
             )
 
         return fig

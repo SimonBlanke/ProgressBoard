@@ -4,6 +4,7 @@
 
 
 import os
+import json
 import uuid
 
 import numpy as np
@@ -13,7 +14,9 @@ from .progress_io import ProgressIO
 
 
 class ProgressBoard:
-    def __init__(self):
+    def __init__(self, width=2400):
+        self.width = width
+
         self.uuid = uuid.uuid4().hex
         self.progress_ids = []
 
@@ -89,9 +92,11 @@ class ProgressBoard:
     def open(self):
         abspath = os.path.abspath(__file__)
 
-        paths = " ".join(self.progress_ids)
+        config_d = {"width": self.width, "progress_ids": self.progress_ids}
+        self._io_.save_config(config_d)
+
         dashboard_path = os.path.join(os.path.dirname(abspath), "run_panel.py")
-        open_streamlit = "panel serve --show " + dashboard_path + " --args " + paths
+        open_streamlit = "panel serve --show " + dashboard_path
 
         # from: https://stackoverflow.com/questions/7574841/open-a-terminal-from-python
         os.system('gnome-terminal -x bash -c " ' + open_streamlit + ' " ')
