@@ -29,11 +29,14 @@ class DashboardBackend:
         self._io_ = ProgressIO()
         config_d = self._io_.read_config()
 
-        self.width = config_d["width"]
+        self._width_ = config_d["width"]
         self.progress_ids = config_d["progress_ids"]
 
         self.current_progress_data = None
         self.diff_progress_data = None
+
+    def width(self, percentage):
+        return int(self._width_ * percentage)
 
     def get_progress_data(self, progress_id):
         progress_data = self._io_.load_progress(progress_id)

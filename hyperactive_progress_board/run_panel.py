@@ -10,8 +10,8 @@ update_sec = 1
 
 
 # progress_ids = sys.argv[1:]
-backend = DashboardBackend()
-progress_ids = backend.progress_ids
+b_end = DashboardBackend()
+progress_ids = b_end.progress_ids
 
 plot_dict = {}
 data_dict = {}
@@ -22,17 +22,17 @@ for progress_id in progress_ids:
 
     search_id = progress_id.rsplit(":")[0]
 
-    progress_data = backend.get_progress_data(progress_id)
+    progress_data = b_end.get_progress_data(progress_id)
 
-    pyplot_fig = backend.pyplot(progress_data)
-    parallel_coord_plot = backend.parallel_coord(progress_data)
-    parallel_categ_plot = backend.parallel_categ(progress_data)
-    score_hist = backend.score_hist(progress_data)
-    hist_2d = backend.hist_2d(progress_data)
+    pyplot_fig = b_end.pyplot(progress_data)
+    parallel_coord_plot = b_end.parallel_coord(progress_data)
+    parallel_categ_plot = b_end.parallel_categ(progress_data)
+    score_hist = b_end.score_hist(progress_data)
+    hist_2d = b_end.hist_2d(progress_data)
 
-    last_best = backend.create_info(progress_id)
+    last_best = b_end.create_info(progress_id)
 
-    mpl_pane = pn.pane.Plotly(pyplot_fig, max_width=500)
+    mpl_pane = pn.pane.Plotly(pyplot_fig, max_width=b_end.width(0.2))
     parallel_coord_pane = pn.pane.Plotly(parallel_coord_plot)
     parallel_categ_pane = pn.pane.Plotly(parallel_categ_plot)
     score_hist_pane = pn.pane.Plotly(score_hist)
@@ -66,7 +66,7 @@ for progress_id in progress_ids:
     tabs = pn.Tabs(
         ("Parallel Coordinates", parallel_coord_pane),
         ("Parallel Categories", parallel_categ_pane),
-        min_width=1600,
+        min_width=b_end.width(0.8),
     )
 
     plot1_row = pn.Row(mpl_pane, tabs)
@@ -82,36 +82,36 @@ for progress_id in progress_ids:
 
 def patch_line_plot():
     for progress_id in progress_ids:
-        progress_data = backend.get_progress_data(progress_id)
-        pyplot_fig = backend.pyplot(progress_data)
+        progress_data = b_end.get_progress_data(progress_id)
+        pyplot_fig = b_end.pyplot(progress_data)
         plot_dict[progress_id]["line_plot"].object = pyplot_fig
 
 
 def patch_parall_coord():
     for progress_id in progress_ids:
-        progress_data = backend.get_progress_data(progress_id)
-        plotly_fig = backend.parallel_coord(progress_data)
+        progress_data = b_end.get_progress_data(progress_id)
+        plotly_fig = b_end.parallel_coord(progress_data)
         plot_dict[progress_id]["parallel_coord_plot"].object = plotly_fig
 
 
 def patch_parall_categ():
     for progress_id in progress_ids:
-        progress_data = backend.get_progress_data(progress_id)
-        plotly_fig = backend.parallel_categ(progress_data)
+        progress_data = b_end.get_progress_data(progress_id)
+        plotly_fig = b_end.parallel_categ(progress_data)
         plot_dict[progress_id]["parallel_categ_plot"].object = plotly_fig
 
 
 def patch_hist_score():
     for progress_id in progress_ids:
-        progress_data = backend.get_progress_data(progress_id)
-        score_hist_plot = backend.score_hist(progress_data)
+        progress_data = b_end.get_progress_data(progress_id)
+        score_hist_plot = b_end.score_hist(progress_data)
         plot_dict[progress_id]["score_hist"].object = score_hist_plot
 
 
 def patch_hist_2d():
     for progress_id in progress_ids:
-        progress_data = backend.get_progress_data(progress_id)
-        hist_2d = backend.hist_2d(progress_data)
+        progress_data = b_end.get_progress_data(progress_id)
+        hist_2d = b_end.hist_2d(progress_data)
         plot_dict[progress_id]["hist_2d"].object = hist_2d
 
 
