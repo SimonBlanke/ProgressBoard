@@ -30,19 +30,9 @@ class Messages:
             print("Remove lock file from path:", path)
 
 
-class ProgressIO:
-    def __init__(self, verbosity=True, warnings=True):
-        here = os.path.dirname(os.path.abspath(__file__))
-        self.path = here + "/progress_data/"
-
-        self.msg = Messages(verbosity, warnings)
-
-    def create_pd_path(self):
-        if os.path.exists(self.path):
-
-            shutil.rmtree(self.path)
-
-        os.makedirs(self.path)
+class Paths:
+    here = os.path.dirname(os.path.abspath(__file__))
+    path = here + "/progress_data/"
 
     def get_progress_data_path(self, search_id):
         return self.path + "/progress_data_" + search_id + ".csv"
@@ -52,6 +42,16 @@ class ProgressIO:
 
     def get_config_path(self):
         return self.path + "/config.json"
+
+
+class ProgressIO(Paths):
+    def __init__(self, verbosity=True, warnings=True):
+        self.msg = Messages(verbosity, warnings)
+
+    def create_pd_path(self):
+        if os.path.exists(self.path):
+            shutil.rmtree(self.path)
+        os.makedirs(self.path)
 
     def read_config(self):
         with open(self.get_config_path(), "r", encoding="utf-8") as f:
