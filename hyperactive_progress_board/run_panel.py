@@ -8,8 +8,6 @@ from dashboard_backend import DashboardBackend
 
 update_sec = 1
 
-
-# progress_ids = sys.argv[1:]
 b_end = DashboardBackend()
 progress_ids = b_end.progress_ids
 
@@ -24,7 +22,7 @@ for progress_id in progress_ids:
 
     progress_data = b_end.get_progress_data(progress_id)
 
-    pyplot_fig = b_end.pyplot(progress_data)
+    pyplot_fig = b_end.line_plot_score(progress_data)
     parallel_coord_plot = b_end.parallel_coord(progress_data)
     parallel_categ_plot = b_end.parallel_categ(progress_data)
     score_hist = b_end.score_hist(progress_data)
@@ -32,13 +30,13 @@ for progress_id in progress_ids:
 
     last_best = b_end.create_info(progress_id)
 
-    mpl_pane = pn.pane.Plotly(pyplot_fig, max_width=b_end.width(0.2))
+    mpl_pane = pn.pane.Plotly(pyplot_fig)
     parallel_coord_pane = pn.pane.Plotly(parallel_coord_plot)
     parallel_categ_pane = pn.pane.Plotly(parallel_categ_plot)
     score_hist_pane = pn.pane.Plotly(score_hist)
-    hist_2d_pane = pn.pane.Plotly(hist_2d)
+    hist_2d_pane = pn.pane.Plotly(hist_2d, min_width=b_end.width(0.45))
 
-    tabulator = pn.widgets.Tabulator(progress_data, height=300)
+    table_ = pn.widgets.DataFrame(progress_data, row_height=25)
 
     plot_dict[progress_id]["line_plot"] = mpl_pane
     plot_dict[progress_id]["parallel_coord_plot"] = parallel_coord_pane
@@ -46,7 +44,7 @@ for progress_id in progress_ids:
     plot_dict[progress_id]["score_hist"] = score_hist_pane
     plot_dict[progress_id]["hist_2d"] = hist_2d_pane
 
-    plot_dict[progress_id]["table"] = tabulator
+    plot_dict[progress_id]["table"] = table_
 
     # data_dict[progress_id]["parallel_coord_data"] = # pre filter incompatible paras
     # data_dict[progress_id]["parallel_categ_data"] = # pre filter incompatible paras
@@ -59,7 +57,7 @@ for progress_id in progress_ids:
     )
 
     title_line_col = pn.Column(
-        pn.pane.Markdown(title_str), line_html, pn.Spacer(height=10)
+        pn.pane.Markdown(title_str), line_html, pn.Spacer(height=12)
     )
     title_row = pn.Row(title_line_col)
 
@@ -69,9 +67,16 @@ for progress_id in progress_ids:
         min_width=b_end.width(0.8),
     )
 
-    plot1_row = pn.Row(mpl_pane, tabs)
-    plot2_row = pn.Row(score_hist_pane, hist_2d_pane)
-    table_row = pn.Row(tabulator)
+    score_plots_col = pn.Column(mpl_pane, score_hist_pane, max_width=b_end.width(0.3))
+
+    plot1_row = pn.Row(tabs)
+    plot2_row = pn.Row(
+        pn.Column(pn.Spacer(height=100), table_, max_width=b_end.width(0.2)),
+        score_plots_col,
+        hist_2d_pane,
+    )
+
+    table_row = pn.Row(table_)
 
     model_row = pn.Row(
         pn.Column(title_row, plot1_row, plot2_row, table_row, background="white")
@@ -83,7 +88,7 @@ for progress_id in progress_ids:
 def patch_line_plot():
     for progress_id in progress_ids:
         progress_data = b_end.get_progress_data(progress_id)
-        pyplot_fig = b_end.pyplot(progress_data)
+        pyplot_fig = b_end.line_plot_score(progress_data)
         plot_dict[progress_id]["line_plot"].object = pyplot_fig
 
 

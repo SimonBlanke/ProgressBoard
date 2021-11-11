@@ -44,11 +44,15 @@ class DashboardBackend:
             return
         return progress_data[~progress_data.isin([np.nan, np.inf, -np.inf]).any(1)]
 
-    def pyplot(self, progress_data):
+    def line_plot_score(self, progress_data):
         if progress_data is None or len(progress_data) <= 1:
             fig = px.line(pd.DataFrame([]))
-            fig = go.Figure()
+            # fig = go.Figure()
         else:
+            fig = px.line(
+                progress_data, x="nth_iter", y="score_best", color="nth_process"
+            )
+            """
             fig = go.Figure()
 
             nth_iter = progress_data["nth_iter"]
@@ -64,7 +68,7 @@ class DashboardBackend:
                         y=score_best_p,
                     )
                 )
-
+            """
         return fig
 
     def get_cat_cols(self, progress_data, score=True):
@@ -175,7 +179,11 @@ class DashboardBackend:
         else:
             scores = progress_data["score"]
             fig = px.scatter(
-                progress_data, x="min_samples_split", y="x1", color="score"
+                progress_data,
+                x="min_samples_split",
+                y="x1",
+                color="score",
+                color_continuous_scale=color_scale,
             )
 
         return fig
