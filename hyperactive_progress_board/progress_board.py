@@ -4,8 +4,10 @@
 
 
 import os
+import time
 import json
 import uuid
+from shutil import copyfile
 
 import numpy as np
 
@@ -44,8 +46,10 @@ class ProgressBoard:
         self.init_paths(objective_function.__name__)
 
         def wrapper(para):
-
+            c_time = time.time()
             results = objective_function(para)
+            d_time = time.time() - c_time
+
             progress_id = objective_function.__name__ + ":" + self.uuid
 
             if isinstance(results, tuple):
@@ -65,6 +69,7 @@ class ProgressBoard:
             progress_dict["score_best"] = self.best_score
             progress_dict["nth_iter"] = self.nth_iter
             progress_dict["best"] = self.best
+            progress_dict["eval time"] = d_time
 
             progress_dict["nth_process"] = para.nth_process
 
@@ -89,14 +94,31 @@ class ProgressBoard:
         data_c = DataSaver(self._io_.get_progress_data_path(progress_id))
         self.progress_collectors[progress_id] = data_c
 
-    def open(self):
+    def create_tmp_panels(self):
         abspath = os.path.abspath(__file__)
 
+        panel_paths = []
+        dashboard_path = os.path.join(os.path.dirname(abspath), "run_panel.py")
+        for progress_id in self.progress_ids:
+            panel_path = os.path.join(
+                os.path.dirname(abspath),
+                "tmp_files",
+                progress_id + ".py",
+            )
+            copyfile(dashboard_path, panel_path)
+
+            panel_paths.append(panel_path)
+        return " ".join(panel_paths)
+
+    def open(self):
         config_d = {"width": self.width, "progress_ids": self.progress_ids}
+
+        self._io_.create_init()
         self._io_.save_config(config_d)
 
-        dashboard_path = os.path.join(os.path.dirname(abspath), "run_panel.py")
-        open_streamlit = "panel serve --show " + dashboard_path
+        panel_paths_tmp = self.create_tmp_panels()
+
+        open_streamlit = "panel serve --show " + panel_paths_tmp
 
         # from: https://stackoverflow.com/questions/7574841/open-a-terminal-from-python
         os.system('gnome-terminal -x bash -c " ' + open_streamlit + ' " ')

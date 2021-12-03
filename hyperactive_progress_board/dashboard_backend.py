@@ -44,6 +44,15 @@ class DashboardBackend:
             return
         return progress_data[~progress_data.isin([np.nan, np.inf, -np.inf]).any(1)]
 
+    def get_para_score_df(self, progress_id):
+        df = self.get_progress_data(progress_id)
+        df = df.drop(
+            ["nth_iter", "score_best", "nth_process", "best", "eval time"],
+            axis=1,
+            errors="ignore",
+        )
+        return df
+
     def line_plot_score(self, progress_data):
         if progress_data is None or len(progress_data) <= 1:
             fig = px.line(pd.DataFrame([]))
@@ -186,6 +195,8 @@ class DashboardBackend:
                 color_continuous_scale=color_scale,
             )
 
+        fig.update_layout(autosize=True)
+
         return fig
 
     def parallel_coord(self, progress_data):
@@ -193,12 +204,16 @@ class DashboardBackend:
             fig = px.parallel_coordinates(pd.DataFrame([]))
         else:
             progress_data = progress_data.drop(
-                ["nth_iter", "score_best", "nth_process", "best"], axis=1
+                ["nth_iter", "score_best", "nth_process", "best"],
+                axis=1,
+                errors="ignore",
             )
 
             # remove score
             prog_data_columns = list(progress_data.columns)
             prog_data_columns.remove("score")
+
+            print("parallel coord data 2 \n", progress_data, "\n")
 
             fig = px.parallel_coordinates(
                 progress_data,
@@ -206,6 +221,8 @@ class DashboardBackend:
                 color="score",
                 color_continuous_scale=color_scale,
             )
+
+        fig.update_layout(autosize=True)
 
         return fig
 
@@ -251,16 +268,20 @@ class DashboardBackend:
         if progress_data is None or len(progress_data) <= 1:
             return None
 
-        progress_data_best = progress_data.drop(
-            ["nth_iter", "score_best", "nth_process", "best"], axis=1
+        progress_data = progress_data.drop(
+            ["nth_iter", "score_best", "nth_process", "best", "eval time"],
+            axis=1,
+            errors="ignore",
         )
 
-        progress_data_best = progress_data_best.sort_values("score")
-        last_best = progress_data_best.tail(10)
-        last_best = last_best.rename(
-            columns={
-                "score": "best 5 scores",
-            }
-        )
+        progress_data_best = progress_data.sort_values("score")
 
-        return last_best
+        last_10 = progress_data.tail(10).reset_index()
+        best_10 = progress_data_best.tail(10).reset_index()
+        worst_10 = progress_data_best.head(10).reset_index()
+
+        last_10 = last_10.drop(["index"], axis=1, errors="ignore")
+        best_10 = best_10.drop(["index"], axis=1, errors="ignore")
+        worst_10 = worst_10.drop(["index"], axis=1, errors="ignore")
+
+        return last_10, best_10, worst_10

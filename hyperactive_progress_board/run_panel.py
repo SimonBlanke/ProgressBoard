@@ -1,142 +1,183 @@
+import os
 import panel as pn
+import holoviews as hv
 
-pn.extension(sizing_mode="stretch_width")
+import numpy as np
+import pandas as pd
+
+pn.extension(sizing_mode="stretch_both")
 pn.extension("plotly")
 
-from dashboard_backend import DashboardBackend
-
+from hyperactive_progress_board.dashboard_backend import DashboardBackend
 
 update_sec = 1
 
 b_end = DashboardBackend()
-progress_ids = b_end.progress_ids
+progress_id = os.path.basename(__file__).split(".", 1)[0]
 
 plot_dict = {}
-data_dict = {}
-model_row_list = []
-for progress_id in progress_ids:
-    plot_dict[progress_id] = {}
-    data_dict[progress_id] = {}
+search_id = progress_id.rsplit(":")[0]
 
-    search_id = progress_id.rsplit(":")[0]
+progress_data = b_end.get_progress_data(progress_id)
+para_score_df = b_end.get_para_score_df(progress_id)
 
+column_names = list(progress_data.columns)
+
+
+pyplot_fig = b_end.line_plot_score(progress_data)
+parallel_coord_plot = b_end.parallel_coord(para_score_df)
+parallel_categ_plot = b_end.parallel_categ(para_score_df)
+score_hist = b_end.score_hist(progress_data)
+hist_2d = b_end.hist_2d(progress_data)
+
+mpl_pane = pn.pane.Plotly(pyplot_fig)
+parallel_coord_pane = pn.pane.Plotly(parallel_coord_plot)
+parallel_categ_pane = pn.pane.Plotly(parallel_categ_plot)
+score_hist_pane = pn.pane.Plotly(score_hist)
+hist_2d_pane = pn.pane.Plotly(hist_2d)
+
+mpl_pane = pn.Column(mpl_pane)
+parallel_coord_pane = pn.Column(parallel_coord_pane)
+parallel_categ_pane = pn.Column(parallel_categ_pane)
+score_hist_pane = pn.Column(score_hist_pane)
+hist_2d_pane = pn.Column(hist_2d_pane, sizing_mode="stretch_both")
+
+
+row_height = 35
+last_10, best_10, worst_10 = b_end.create_info(progress_id)
+
+table_last = pn.widgets.DataFrame(
+    last_10, show_index=False, index_names=False, row_height=row_height
+)
+table_best = pn.widgets.DataFrame(
+    best_10, show_index=False, index_names=False, row_height=row_height
+)
+table_worst = pn.widgets.DataFrame(
+    worst_10, show_index=False, index_names=False, row_height=row_height
+)
+
+table_tabs = pn.Tabs(
+    ("Last 10", table_last), ("Best 10", table_best), ("Worst 10", table_worst)
+)
+
+
+plot_dict["line_plot"] = mpl_pane
+plot_dict["parallel_coord_plot"] = parallel_coord_pane
+plot_dict["parallel_categ_plot"] = parallel_categ_pane
+plot_dict["score_hist"] = score_hist_pane
+plot_dict["hist_2d"] = hist_2d_pane
+
+plot_dict["table"] = table_tabs
+
+title_str = """ # Objective Function: {0} """
+title_str = title_str.format(search_id)
+line_html = pn.pane.HTML(
+    """<hr style="height:1px;border:none;color:#333;background-color:#333;" /> """,
+    height=1,
+)
+
+title_line_col = pn.Column(pn.pane.Markdown(title_str), line_html, pn.Spacer(height=12))
+title_row = pn.Row(title_line_col)
+
+
+def create_filters(df, orientation="horz"):
+    paras = list(df.columns)
+    filter_d = {}
+
+    if orientation == "horz":
+        orient = "horizontal"
+        inline = True
+    elif orientation == "vert":
+        orient = "vertical"
+        inline = False
+
+    for para in paras:
+        para_data = df[para].values
+
+        try:
+            min_ = np.amin(para_data)
+            max_ = np.amax(para_data)
+            step_ = (max_ - min_) / 100
+        except:
+            filter_d[para] = pn.widgets.CheckBoxGroup(
+                name=str(para),
+                value=list(set(para_data)),
+                options=list(set(para_data)),
+                inline=inline,
+            )
+        else:
+            filter_d[para] = pn.widgets.RangeSlider(
+                name=str(para),
+                start=min_,
+                end=max_,
+                step=step_,
+                orientation=orient,
+            )
+
+    filter_l = list(filter_d.values())
+
+    return pn.Column(*filter_l, height=40 * len(filter_l)), filter_d
+
+
+# filters_col, filter_d = create_filters(para_score_df)
+
+
+paral_coord_col = pn.Column(parallel_coord_pane)
+parallel_plot_tabs = pn.Tabs(
+    ("Parallel Coordinates", paral_coord_col),
+    ("Parallel Categories", parallel_categ_pane),
+)
+
+
+def update_widgets():
     progress_data = b_end.get_progress_data(progress_id)
 
+    para_score_df = b_end.get_para_score_df(progress_id)
+
+    """
+    para_score_df_fil = para_score_df[
+        para_score_df["min_samples_split"].between(*filter_d["min_samples_split"].value)
+    ]
+    """
+    # print("\n para_score_df_fil \n", para_score_df_fil, "\n")
+
     pyplot_fig = b_end.line_plot_score(progress_data)
-    parallel_coord_plot = b_end.parallel_coord(progress_data)
-    parallel_categ_plot = b_end.parallel_categ(progress_data)
-    score_hist = b_end.score_hist(progress_data)
+    paral_crd_plt = b_end.parallel_coord(progress_data)
+    paral_cat_plt = b_end.parallel_categ(progress_data)
+    score_hist_plot = b_end.score_hist(progress_data)
     hist_2d = b_end.hist_2d(progress_data)
 
-    last_best = b_end.create_info(progress_id)
+    plot_dict["line_plot"].object = pyplot_fig
+    plot_dict["parallel_coord_plot"].object = paral_crd_plt
+    plot_dict["parallel_categ_plot"].object = paral_cat_plt
+    plot_dict["score_hist"].object = score_hist_plot
+    plot_dict["hist_2d"].object = hist_2d
 
-    mpl_pane = pn.pane.Plotly(pyplot_fig)
-    parallel_coord_pane = pn.pane.Plotly(parallel_coord_plot)
-    parallel_categ_pane = pn.pane.Plotly(parallel_categ_plot)
-    score_hist_pane = pn.pane.Plotly(score_hist)
-    hist_2d_pane = pn.pane.Plotly(hist_2d, min_width=b_end.width(0.45))
+    last_10, best_10, worst_10 = b_end.create_info(progress_id)
 
-    table_ = pn.widgets.DataFrame(progress_data, row_height=25)
-
-    plot_dict[progress_id]["line_plot"] = mpl_pane
-    plot_dict[progress_id]["parallel_coord_plot"] = parallel_coord_pane
-    plot_dict[progress_id]["parallel_categ_plot"] = parallel_categ_pane
-    plot_dict[progress_id]["score_hist"] = score_hist_pane
-    plot_dict[progress_id]["hist_2d"] = hist_2d_pane
-
-    plot_dict[progress_id]["table"] = table_
-
-    # data_dict[progress_id]["parallel_coord_data"] = # pre filter incompatible paras
-    # data_dict[progress_id]["parallel_categ_data"] = # pre filter incompatible paras
-
-    title_str = """ # Objective Function: {0} """
-    title_str = title_str.format(search_id)
-    line_html = pn.pane.HTML(
-        """<hr style="height:1px;border:none;color:#333;background-color:#333;" /> """,
-        height=1,
-    )
-
-    title_line_col = pn.Column(
-        pn.pane.Markdown(title_str), line_html, pn.Spacer(height=12)
-    )
-    title_row = pn.Row(title_line_col)
-
-    tabs = pn.Tabs(
-        ("Parallel Coordinates", parallel_coord_pane),
-        ("Parallel Categories", parallel_categ_pane),
-        min_width=b_end.width(0.8),
-    )
-
-    score_plots_col = pn.Column(mpl_pane, score_hist_pane, max_width=b_end.width(0.3))
-
-    plot1_row = pn.Row(tabs)
-    plot2_row = pn.Row(
-        pn.Column(pn.Spacer(height=100), table_, max_width=b_end.width(0.2)),
-        score_plots_col,
-        hist_2d_pane,
-    )
-
-    table_row = pn.Row(table_)
-
-    model_row = pn.Row(
-        pn.Column(title_row, plot1_row, plot2_row, table_row, background="white")
-    )
-    model_row_list.append(model_row)
-    model_row_list.append(pn.Row(pn.Spacer(height=100), background="WhiteSmoke"))
-
-
-def patch_line_plot():
-    for progress_id in progress_ids:
-        progress_data = b_end.get_progress_data(progress_id)
-        pyplot_fig = b_end.line_plot_score(progress_data)
-        plot_dict[progress_id]["line_plot"].object = pyplot_fig
-
-
-def patch_parall_coord():
-    for progress_id in progress_ids:
-        progress_data = b_end.get_progress_data(progress_id)
-        plotly_fig = b_end.parallel_coord(progress_data)
-        plot_dict[progress_id]["parallel_coord_plot"].object = plotly_fig
-
-
-def patch_parall_categ():
-    for progress_id in progress_ids:
-        progress_data = b_end.get_progress_data(progress_id)
-        plotly_fig = b_end.parallel_categ(progress_data)
-        plot_dict[progress_id]["parallel_categ_plot"].object = plotly_fig
-
-
-def patch_hist_score():
-    for progress_id in progress_ids:
-        progress_data = b_end.get_progress_data(progress_id)
-        score_hist_plot = b_end.score_hist(progress_data)
-        plot_dict[progress_id]["score_hist"].object = score_hist_plot
-
-
-def patch_hist_2d():
-    for progress_id in progress_ids:
-        progress_data = b_end.get_progress_data(progress_id)
-        hist_2d = b_end.hist_2d(progress_data)
-        plot_dict[progress_id]["hist_2d"].object = hist_2d
+    plot_dict["table"][0].patch(last_10)
+    plot_dict["table"][1].patch(best_10)
+    plot_dict["table"][2].patch(worst_10)
 
 
 update_msec = 1000 * update_sec
 
-pn.state.add_periodic_callback(patch_line_plot, update_msec)
-pn.state.add_periodic_callback(patch_parall_coord, update_msec)
-pn.state.add_periodic_callback(patch_parall_categ, update_msec)
-pn.state.add_periodic_callback(patch_hist_score, update_msec)
-pn.state.add_periodic_callback(patch_hist_2d, update_msec)
+pn.state.add_periodic_callback(update_widgets, update_msec)
 
 
-main_col = pn.Column(*model_row_list)
-layout = pn.layout.GridBox(main_col, sizing_mode="stretch_both")
-
-pn.template.FastListTemplate(
-    site="Hyperactive",
-    title="Progress Board",
-    main=[
-        layout,
-    ],
+app = pn.template.FastGridTemplate(
+    site="Hyperactive Progress Board",
+    title=search_id,
+    prevent_collision=True,
+    row_height=50,
     header_background="#544763",
-).servable()
+)
+
+app.main[0:8, 0:12] = parallel_plot_tabs
+app.main[8:16, 0:6] = mpl_pane
+app.main[16:24, 0:6] = score_hist_pane
+app.main[8:24, 6:12] = hist_2d_pane
+app.main[24:32, 0:12] = table_tabs
+
+
+app.servable()

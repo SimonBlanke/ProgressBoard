@@ -32,7 +32,7 @@ class Messages:
 
 class Paths:
     here = os.path.dirname(os.path.abspath(__file__))
-    path = here + "/progress_data/"
+    path = here + "/tmp_files/"
 
     def get_progress_data_path(self, search_id):
         return self.path + "/progress_data_" + search_id + ".csv"
@@ -47,6 +47,11 @@ class Paths:
 class ProgressIO(Paths):
     def __init__(self, verbosity=True, warnings=True):
         self.msg = Messages(verbosity, warnings)
+
+    def create_init(self):
+        init_file = os.path.join(self.path, "__init__.py")
+        if not os.path.exists(init_file):
+            os.mknod(init_file)
 
     def create_pd_path(self):
         if os.path.exists(self.path):
