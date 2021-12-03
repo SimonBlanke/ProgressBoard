@@ -132,9 +132,11 @@ class DashboardBackend:
                 dimensions=prog_data_columns,
             )
 
+        fig.update_layout(autosize=True)
+
         return fig
 
-    def parallel_coord_(self, progress_data):
+    def parallel_coord_go(self, progress_data):
         if progress_data is None or len(progress_data) <= 1:
             fig = go.Figure()
         else:
@@ -170,7 +172,7 @@ class DashboardBackend:
 
         return fig
 
-    def score_hist(self, progress_data):
+    def score_1d_hist(self, progress_data):
         if progress_data is None or len(progress_data) <= 1:
             # fig = go.Figure()
             fig = px.histogram(pd.DataFrame([]))
@@ -181,30 +183,12 @@ class DashboardBackend:
 
         return fig
 
-    def hist_2d(self, progress_data):
-        if progress_data is None or len(progress_data) <= 1:
-            # fig = go.Figure()
-            fig = px.histogram(pd.DataFrame([]))
-        else:
-            scores = progress_data["score"]
-            fig = px.scatter(
-                progress_data,
-                x="min_samples_split",
-                y="x1",
-                color="score",
-                color_continuous_scale=color_scale,
-            )
-
-        fig.update_layout(autosize=True)
-
-        return fig
-
     def parallel_coord(self, progress_data):
         if progress_data is None or len(progress_data) <= 1:
             fig = px.parallel_coordinates(pd.DataFrame([]))
         else:
             progress_data = progress_data.drop(
-                ["nth_iter", "score_best", "nth_process", "best"],
+                ["nth_iter", "score_best", "nth_process", "best", "eval time"],
                 axis=1,
                 errors="ignore",
             )
@@ -212,8 +196,6 @@ class DashboardBackend:
             # remove score
             prog_data_columns = list(progress_data.columns)
             prog_data_columns.remove("score")
-
-            print("parallel coord data 2 \n", progress_data, "\n")
 
             fig = px.parallel_coordinates(
                 progress_data,
@@ -226,44 +208,7 @@ class DashboardBackend:
 
         return fig
 
-    def table_plotly(self, search_data):
-        df_len = len(search_data)
-
-        headerColor = "#b5beff"
-        rowEvenColor = "#e8e8e8"
-        rowOddColor = "white"
-
-        fig = go.Figure(
-            data=[
-                go.Table(
-                    header=dict(
-                        values=list(search_data.columns),
-                        fill_color=headerColor,
-                        align="center",
-                        font_size=18,
-                        height=30,
-                    ),
-                    cells=dict(
-                        values=[search_data[col] for col in search_data.columns],
-                        # fill_color="lavender",
-                        fill_color=[
-                            [
-                                rowOddColor,
-                                rowEvenColor,
-                            ]
-                            * int((df_len / 2) + 1)
-                        ],
-                        align=["center"],
-                        font_size=14,
-                        height=30,
-                    ),
-                )
-            ]
-        )
-        fig.update_layout(height=550)
-        return fig
-
-    def create_info(self, progress_id):
+    def create_dfs(self, progress_id):
         progress_data = self.get_progress_data(progress_id)
         if progress_data is None or len(progress_data) <= 1:
             return None

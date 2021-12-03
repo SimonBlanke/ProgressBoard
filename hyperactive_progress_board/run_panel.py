@@ -16,18 +16,14 @@ b_end = DashboardBackend()
 progress_id = os.path.basename(__file__).split(".", 1)[0]
 
 plot_dict = {}
-search_id = progress_id.rsplit(":")[0]
 
 progress_data = b_end.get_progress_data(progress_id)
-para_score_df = b_end.get_para_score_df(progress_id)
-
-column_names = list(progress_data.columns)
 
 
 pyplot_fig = b_end.line_plot_score(progress_data)
-parallel_coord_plot = b_end.parallel_coord(para_score_df)
-parallel_categ_plot = b_end.parallel_categ(para_score_df)
-score_hist = b_end.score_hist(progress_data)
+parallel_coord_plot = b_end.parallel_coord(progress_data)
+parallel_categ_plot = b_end.parallel_categ(progress_data)
+score_hist = b_end.score_1d_hist(progress_data)
 hist_2d = b_end.hist_2d(progress_data)
 
 mpl_pane = pn.pane.Plotly(pyplot_fig)
@@ -36,15 +32,9 @@ parallel_categ_pane = pn.pane.Plotly(parallel_categ_plot)
 score_hist_pane = pn.pane.Plotly(score_hist)
 hist_2d_pane = pn.pane.Plotly(hist_2d)
 
-mpl_pane = pn.Column(mpl_pane)
-parallel_coord_pane = pn.Column(parallel_coord_pane)
-parallel_categ_pane = pn.Column(parallel_categ_pane)
-score_hist_pane = pn.Column(score_hist_pane)
-hist_2d_pane = pn.Column(hist_2d_pane, sizing_mode="stretch_both")
-
 
 row_height = 35
-last_10, best_10, worst_10 = b_end.create_info(progress_id)
+last_10, best_10, worst_10 = b_end.create_dfs(progress_id)
 
 table_last = pn.widgets.DataFrame(
     last_10, show_index=False, index_names=False, row_height=row_height
@@ -69,17 +59,8 @@ plot_dict["hist_2d"] = hist_2d_pane
 
 plot_dict["table"] = table_tabs
 
-title_str = """ # Objective Function: {0} """
-title_str = title_str.format(search_id)
-line_html = pn.pane.HTML(
-    """<hr style="height:1px;border:none;color:#333;background-color:#333;" /> """,
-    height=1,
-)
 
-title_line_col = pn.Column(pn.pane.Markdown(title_str), line_html, pn.Spacer(height=12))
-title_row = pn.Row(title_line_col)
-
-
+"""
 def create_filters(df, orientation="horz"):
     paras = list(df.columns)
     filter_d = {}
@@ -117,10 +98,7 @@ def create_filters(df, orientation="horz"):
     filter_l = list(filter_d.values())
 
     return pn.Column(*filter_l, height=40 * len(filter_l)), filter_d
-
-
-# filters_col, filter_d = create_filters(para_score_df)
-
+"""
 
 paral_coord_col = pn.Column(parallel_coord_pane)
 parallel_plot_tabs = pn.Tabs(
@@ -132,19 +110,10 @@ parallel_plot_tabs = pn.Tabs(
 def update_widgets():
     progress_data = b_end.get_progress_data(progress_id)
 
-    para_score_df = b_end.get_para_score_df(progress_id)
-
-    """
-    para_score_df_fil = para_score_df[
-        para_score_df["min_samples_split"].between(*filter_d["min_samples_split"].value)
-    ]
-    """
-    # print("\n para_score_df_fil \n", para_score_df_fil, "\n")
-
     pyplot_fig = b_end.line_plot_score(progress_data)
     paral_crd_plt = b_end.parallel_coord(progress_data)
     paral_cat_plt = b_end.parallel_categ(progress_data)
-    score_hist_plot = b_end.score_hist(progress_data)
+    score_hist_plot = b_end.score_1d_hist(progress_data)
     hist_2d = b_end.hist_2d(progress_data)
 
     plot_dict["line_plot"].object = pyplot_fig
@@ -153,7 +122,7 @@ def update_widgets():
     plot_dict["score_hist"].object = score_hist_plot
     plot_dict["hist_2d"].object = hist_2d
 
-    last_10, best_10, worst_10 = b_end.create_info(progress_id)
+    last_10, best_10, worst_10 = b_end.create_dfs(progress_id)
 
     plot_dict["table"][0].patch(last_10)
     plot_dict["table"][1].patch(best_10)
@@ -167,7 +136,7 @@ pn.state.add_periodic_callback(update_widgets, update_msec)
 
 app = pn.template.FastGridTemplate(
     site="Hyperactive Progress Board",
-    title=search_id,
+    title=progress_id.rsplit(":")[0],
     prevent_collision=True,
     row_height=50,
     header_background="#544763",
@@ -175,9 +144,8 @@ app = pn.template.FastGridTemplate(
 
 app.main[0:8, 0:12] = parallel_plot_tabs
 app.main[8:16, 0:6] = mpl_pane
-app.main[16:24, 0:6] = score_hist_pane
-app.main[8:24, 6:12] = hist_2d_pane
-app.main[24:32, 0:12] = table_tabs
+app.main[8:16, 6:12] = score_hist_pane
+app.main[16:24, 0:12] = table_tabs
 
 
 app.servable()
