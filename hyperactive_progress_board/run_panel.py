@@ -24,13 +24,11 @@ pyplot_fig = b_end.line_plot_score(progress_data)
 parallel_coord_plot = b_end.parallel_coord(progress_data)
 parallel_categ_plot = b_end.parallel_categ(progress_data)
 score_hist = b_end.score_1d_hist(progress_data)
-hist_2d = b_end.hist_2d(progress_data)
 
 mpl_pane = pn.pane.Plotly(pyplot_fig)
 parallel_coord_pane = pn.pane.Plotly(parallel_coord_plot)
 parallel_categ_pane = pn.pane.Plotly(parallel_categ_plot)
 score_hist_pane = pn.pane.Plotly(score_hist)
-hist_2d_pane = pn.pane.Plotly(hist_2d)
 
 
 row_height = 35
@@ -55,7 +53,6 @@ plot_dict["line_plot"] = mpl_pane
 plot_dict["parallel_coord_plot"] = parallel_coord_pane
 plot_dict["parallel_categ_plot"] = parallel_categ_pane
 plot_dict["score_hist"] = score_hist_pane
-plot_dict["hist_2d"] = hist_2d_pane
 
 plot_dict["table"] = table_tabs
 
@@ -114,13 +111,11 @@ def update_widgets():
     paral_crd_plt = b_end.parallel_coord(progress_data)
     paral_cat_plt = b_end.parallel_categ(progress_data)
     score_hist_plot = b_end.score_1d_hist(progress_data)
-    hist_2d = b_end.hist_2d(progress_data)
 
     plot_dict["line_plot"].object = pyplot_fig
     plot_dict["parallel_coord_plot"].object = paral_crd_plt
     plot_dict["parallel_categ_plot"].object = paral_cat_plt
     plot_dict["score_hist"].object = score_hist_plot
-    plot_dict["hist_2d"].object = hist_2d
 
     last_10, best_10, worst_10 = b_end.create_dfs(progress_id)
 
@@ -138,14 +133,14 @@ app = pn.template.FastGridTemplate(
     site="Hyperactive Progress Board",
     title=progress_id.rsplit(":")[0],
     prevent_collision=True,
-    row_height=50,
+    row_height=150,
     header_background="#544763",
 )
 
-app.main[0:8, 0:12] = parallel_plot_tabs
-app.main[8:16, 0:6] = mpl_pane
-app.main[8:16, 6:12] = score_hist_pane
-app.main[16:24, 0:12] = table_tabs
+app.main[0:3, 0:12] = parallel_plot_tabs
+app.main[3:6, 0:6] = mpl_pane
+app.main[3:6, 6:12] = score_hist_pane
+app.main[6:9, 0:12] = table_tabs
 
 
 app.servable()

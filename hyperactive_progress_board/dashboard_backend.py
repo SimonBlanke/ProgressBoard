@@ -211,7 +211,7 @@ class DashboardBackend:
     def create_dfs(self, progress_id):
         progress_data = self.get_progress_data(progress_id)
         if progress_data is None or len(progress_data) <= 1:
-            return None
+            return None, None, None
 
         progress_data = progress_data.drop(
             ["nth_iter", "score_best", "nth_process", "best", "eval time"],
