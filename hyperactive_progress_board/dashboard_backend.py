@@ -2,7 +2,7 @@
 # Email: simon.blanke@yahoo.com
 # License: MIT License
 
-import json
+import time
 import numpy as np
 import pandas as pd
 import matplotlib
@@ -43,6 +43,17 @@ class DashboardBackend:
         if progress_data is None:
             return
         return progress_data[~progress_data.isin([np.nan, np.inf, -np.inf]).any(1)]
+
+    def get_progress_data_wait(self, progress_id):
+        print("\n")
+        while True:
+            progress_data = self.get_progress_data(progress_id)
+            if progress_data is not None and len(progress_data) > 9:
+                break
+            print("Waiting for 10 samples of progress data...")
+            time.sleep(1)
+        print("\nProgress data samples found!")
+        return progress_data
 
     def get_para_score_df(self, progress_id):
         df = self.get_progress_data(progress_id)
@@ -206,6 +217,43 @@ class DashboardBackend:
 
         fig.update_layout(autosize=True)
 
+        return fig
+
+    def table_plotly(self, search_data):
+        df_len = len(search_data)
+
+        headerColor = "#b5beff"
+        rowEvenColor = "#e8e8e8"
+        rowOddColor = "white"
+
+        fig = go.Figure(
+            data=[
+                go.Table(
+                    header=dict(
+                        values=list(search_data.columns),
+                        fill_color=headerColor,
+                        align="center",
+                        font_size=18,
+                        height=30,
+                    ),
+                    cells=dict(
+                        values=[search_data[col] for col in search_data.columns],
+                        # fill_color="lavender",
+                        fill_color=[
+                            [
+                                rowOddColor,
+                                rowEvenColor,
+                            ]
+                            * int((df_len / 2) + 1)
+                        ],
+                        align=["center"],
+                        font_size=14,
+                        height=30,
+                    ),
+                )
+            ]
+        )
+        fig.update_layout(height=550)
         return fig
 
     def create_dfs(self, progress_id):
