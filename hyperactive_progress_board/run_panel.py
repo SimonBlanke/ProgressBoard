@@ -1,9 +1,5 @@
 import os
 import panel as pn
-import holoviews as hv
-
-import numpy as np
-import pandas as pd
 
 from hyperactive_progress_board.dashboard_backend import DashboardBackend
 

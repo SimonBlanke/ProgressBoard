@@ -6,8 +6,6 @@ import time
 import numpy as np
 import pandas as pd
 import matplotlib
-import matplotlib.pyplot as plt
-from matplotlib.figure import Figure
 import plotly.express as px
 import plotly.graph_objects as go
 
@@ -48,6 +46,7 @@ class DashboardBackend:
         print("\n")
         while True:
             progress_data = self.get_progress_data(progress_id)
+
             if progress_data is not None and len(progress_data) > 9:
                 break
             print("Waiting for 10 samples of progress data...")

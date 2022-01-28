@@ -5,13 +5,12 @@
 
 import os
 import time
-import json
 import uuid
 from shutil import copyfile
 
 import numpy as np
 
-from hyperactive_data_storage import DataSaver
+from simple_data_collector import DataCollector
 from .progress_io import ProgressIO
 
 
@@ -91,7 +90,7 @@ class ProgressBoard:
         self.progress_ids.append(progress_id)
 
         self.create_lock(progress_id)
-        data_c = DataSaver(self._io_.get_progress_data_path(progress_id))
+        data_c = DataCollector(self._io_.get_progress_data_path(progress_id))
         self.progress_collectors[progress_id] = data_c
 
     def create_tmp_panels(self):

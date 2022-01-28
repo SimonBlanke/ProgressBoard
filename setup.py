@@ -9,13 +9,13 @@ with open("README.md", "r") as fh:
 
 
 requirements = [
-    "streamlit",
+    "panel",
     "numpy",
     "pandas",
     "tqdm",
     "plotly",
     "matplotlib",
-    "hyperactive_data_storage",
+    "simple-data-collector",
 ]
 
 
