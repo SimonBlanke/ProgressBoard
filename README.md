@@ -2,7 +2,16 @@
     Progress Board
 </H1>
 
-<br>
+
+<p align="center">
+  <a href="https://github.com/SimonBlanke/ProgressBoard/actions">
+    <img src="https://github.com/SimonBlanke/ProgressBoard/actions/workflows/tests.yml/badge.svg?branch=master" alt="img not loaded: try F5 :)">
+  </a>
+  <a href="https://app.codecov.io/gh/SimonBlanke/ProgressBoard">
+    <img src="https://img.shields.io/codecov/c/github/SimonBlanke/ProgressBoard/master&logo=codecov" alt="img not loaded: try F5 :)">
+  </a>
+</p>
+
 
 <H2 align="center">
     An addon for the Hyperactive package to visualize the progress of optimization runs.
