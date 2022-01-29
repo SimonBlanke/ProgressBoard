@@ -5,10 +5,10 @@
 
 <p align="center">
   <a href="https://github.com/SimonBlanke/ProgressBoard/actions">
-    <img src="https://github.com/SimonBlanke/ProgressBoard/actions/workflows/tests.yml/badge.svg?branch=master" alt="img not loaded: try F5 :)">
+    <img src="https://github.com/SimonBlanke/ProgressBoard/actions/workflows/tests.yml/badge.svg?branch=main" alt="img not loaded: try F5 :)">
   </a>
   <a href="https://app.codecov.io/gh/SimonBlanke/ProgressBoard">
-    <img src="https://img.shields.io/codecov/c/github/SimonBlanke/ProgressBoard/master&logo=codecov" alt="img not loaded: try F5 :)">
+    <img src="https://img.shields.io/codecov/c/github/SimonBlanke/ProgressBoard/main&logo=codecov" alt="img not loaded: try F5 :)">
   </a>
 </p>
 
