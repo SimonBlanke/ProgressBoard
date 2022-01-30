@@ -17,7 +17,13 @@
     An addon for the Hyperactive package to visualize the progress of optimization runs.
 </H2>
 
+
+
+<td> <img src="./docs/output.gif" width="100%"> </td>
+
+
 <br>
+
 
 The Progress Board is a dashboard (opens in webbrowser) that provides visualization of live-updated data from Hyperactive. It integrates seamlessly with Hyperactive (v4) and opens up the optimization run with useful information. It also supports multiprocessing and multiple searches at the same time without any added complexity or work for the user. 
 
