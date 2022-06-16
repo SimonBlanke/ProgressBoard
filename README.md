@@ -46,6 +46,7 @@ The Progress Board is tested in Ubuntu, but Windows support maybe added in the f
 pip install hyperactive-progress-board
 ```
 
+<br>
 
 ## Example
 
@@ -84,3 +85,21 @@ hyper = Hyperactive()
 hyper.add_search(dtr_model, search_space, n_iter=1000)
 hyper.run()
 ```
+
+<br>
+
+## FAQ
+
+<details>
+<summary> Command line opens and closes immediately </summary>
+
+<br>
+
+This happens because of the command line of a previous run of the progress-board is still running. Close the command-line from the previous run to start a new one.
+
+</details>
+
+
+
+
+
