@@ -24,13 +24,21 @@
 
 <br>
 
-
 The Progress Board is a dashboard (opens in webbrowser) that provides visualization of live-updated data from Hyperactive. It integrates seamlessly with Hyperactive (v4) and opens up the optimization run with useful information. It also supports multiprocessing and multiple searches at the same time without any added complexity or work for the user. 
 
 The Progress Board should be used for computationally expensive objective functions (like machine-/deep-learning models). 
 
 The Progress Board is tested in Ubuntu, but Windows support maybe added in the future.
 
+
+<br>
+
+## State of project
+
+### This project is in an early development stage. If you encounter a problem it would be very helpful to open an issue and describe it in detail.
+
+
+<br>
 
 ## Installation
 
