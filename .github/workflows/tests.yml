@@ -31,7 +31,7 @@ jobs:
         python -m pip install --upgrade pip
         python -m pip install hyperactive flake8 pytest coveralls codecov pytest-cov
         python -m pip install .
-        python -m pip install selenium<=4.2.0
+        python -m pip install "selenium<=4.2.0"
         
     - name: Lint with flake8
       run: |
