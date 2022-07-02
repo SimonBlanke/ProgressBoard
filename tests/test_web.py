@@ -5,7 +5,7 @@ dir_path = os.path.dirname(os.path.realpath(__file__))
 progress_board_path = dir_path.rsplit("/", 1)[0]
 print("progress_board_path", progress_board_path)
 
-sys.path.remove("/home/simon/git_workspace/ProgressBoard")
+sys.path.remove(progress_board_path)
 
 import pytest
 import threading
