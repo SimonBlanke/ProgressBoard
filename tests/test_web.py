@@ -61,6 +61,7 @@ def browser():
 
 def test_1(browser):
     print("\n browser \n", browser, "\n")
+    print("\n sys.path \n", sys.path, "\n")
 
     run_opt = threading.Thread(target=run_optimization, name="run_optimization")
     run_opt.start()
