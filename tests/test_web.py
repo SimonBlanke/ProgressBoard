@@ -13,6 +13,9 @@ import threading
 from time import sleep
 from selenium import webdriver
 from selenium.webdriver import Chrome
+from selenium.webdriver.chrome.options import Options
+from selenium.webdriver.chrome.service import Service
+
 from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.chrome.options import Options
 
@@ -43,12 +46,24 @@ def run_optimization():
 
 @pytest.fixture
 def browser():
-    chrome_options = webdriver.ChromeOptions()
+    chrome_options = Options()
+    options = [
+        "--headless",
+        "--disable-gpu",
+        "--window-size=1920,1200",
+        "--ignore-certificate-errors",
+        "--disable-extensions",
+        "--no-sandbox",
+        "--disable-dev-shm-usage",
+    ]
+    for option in options:
+        chrome_options.add_argument(option)
+
     prefs = {"profile.default_content_setting_values.notifications": 2}
     chrome_options.add_experimental_option("prefs", prefs)
 
-    # Initialize ChromeDriver
-    driver = Chrome()
+    driver = Chrome(options=chrome_options)
+
     # Wait implicitly for elements to be ready before attempting interactions
     driver.implicitly_wait(10)
 
