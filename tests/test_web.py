@@ -37,7 +37,7 @@ def run_optimization():
         "x2": list(range(-50, 50)),
     }
 
-    progress.open(show=False)
+    progress.open(show=False, open_terminal=False)
 
     hyper = Hyperactive()
     hyper.add_search(model, search_space, n_iter=150)
@@ -101,3 +101,6 @@ def test_1(browser):
 
     svg_obj_l = browser.find_elements_by_xpath(svg_xpath)
     assert len(svg_obj_l) == 6
+
+    plot0_l = browser.find_elements_by_xpath(plot0_xpath)
+    assert len(plot0_l) == 3
