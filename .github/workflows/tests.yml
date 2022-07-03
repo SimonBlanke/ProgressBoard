@@ -26,6 +26,9 @@ jobs:
       with:
         python-version: ${{ matrix.python-version }}
         
+    - name: Install gnome terminal
+      run: sudo apt-get install gnome-terminal
+        
     - name: Install chrome/chromium
       run: |
           wget -q -O - https://dl-ssl.google.com/linux/linux_signing_key.pub | sudo apt-key add -
