@@ -109,7 +109,7 @@ class ProgressBoard:
             panel_paths.append(panel_path)
         return " ".join(panel_paths)
 
-    def open(self, show=True):
+    def open(self, show=True, open_terminal=True):
         config_d = {"width": self.width, "progress_ids": self.progress_ids}
 
         self._io_.create_init()
@@ -122,5 +122,8 @@ class ProgressBoard:
         else:
             open_panel_cmd = "panel serve " + panel_paths_tmp
 
-        # from: https://stackoverflow.com/questions/7574841/open-a-terminal-from-python
-        os.system('gnome-terminal -x bash -c " ' + open_panel_cmd + ' " ')
+        if open_terminal:
+            # from: https://stackoverflow.com/questions/7574841/open-a-terminal-from-python
+            os.system('gnome-terminal -x bash -c " ' + open_panel_cmd + ' " ')
+        else:
+            os.system(open_panel_cmd)
