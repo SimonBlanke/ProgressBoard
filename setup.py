@@ -9,6 +9,7 @@ with open("README.md", "r") as fh:
 
 
 requirements = [
+    "hyperactive",
     "panel",
     "numpy",
     "pandas",
